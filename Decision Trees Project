@@ -1,0 +1,120 @@
+#attach the data file to Rstudio
+attach(Cerealdata_2024)
+
+
+# Load necessary libraries
+install.packages("rpart.plot")
+
+
+# Load necessary libraries
+library(randomForest)
+library(rpart.plot)
+
+# Convert categorical variables to factors
+Cerealdata_2024$age <- as.factor(Cerealdata_2024$age)
+Cerealdata_2024$gender <- as.factor(Cerealdata_2024$gender)
+Cerealdata_2024$marital <- as.factor(Cerealdata_2024$marital)
+Cerealdata_2024$exercise <- as.factor(Cerealdata_2024$exercise)
+Cerealdata_2024$breakfast <- as.factor(Cerealdata_2024$breakfast)
+
+# Split data into training and validation sets
+set.seed(100)
+train_index <- sample(nrow(Cerealdata_2024), 0.7 * nrow(Cerealdata_2024), replace = FALSE)
+trainset <- Cerealdata_2024[train_index,]
+validset <- Cerealdata_2024[-train_index,]
+
+# Create a random forest model
+library(randomForest)
+model1 <- randomForest(breakfast ~ . , data = trainset, importance = TRUE)
+
+
+# Analysis of predictors importance
+print("Mean Decrease Accuracy:")
+importance_acc <- importance(model1, type = 1)
+print(importance_acc)
+
+
+#Age is the most important factor for accurate predictions, 
+#while gender has a negative impact on accuracy, 
+#and marital status and exercise are also significant factors.
+
+
+
+
+
+
+
+print("Mean Decrease Gini:")
+importance_gini <- importance(model1, type = 2)
+print(importance_gini)
+
+#Age has the highest impact on reducing impurity (Gini index),
+#while gender has the least impact, followed by marital status and exercise.
+
+
+# Predicting on training set
+predtrain <- predict(model1, trainset, type = "class")
+
+# Checking classification accuracy on training set
+train_conf_matrix <- table(predtrain, trainset$breakfast)
+print("Confusion Matrix for Training Set:")
+print(train_conf_matrix)
+
+#75 instances were correctly predicted as "Cereal bar".
+#43 instances of "Cereal bar" were incorrectly predicted as "Cereals".
+#11 instances of "Cereal bar" were incorrectly predicted as "Outmeal".
+# Predicting on validation set
+predvalid <- predict(model1, validset, type = "class")
+
+# Checking classification accuracy on validation set
+valid_conf_matrix <- table(predvalid, validset$breakfast)
+print("Confusion Matrix for Validation Set:")
+print(valid_conf_matrix)
+
+# Calculate accuracy on validation set
+accuracy <- mean(predvalid == validset$breakfast)
+print(paste("Accuracy on Validation Set:", accuracy))
+
+
+
+
+#to check important variables
+importance(model1)
+varImpPlot(model1)
+
+# ---
+#to predict the values
+#create data frame for new data
+new_data <- data.frame(
+  age = c("More than 60"),
+  exercise   = c("Active"),
+  marital = c("single"),
+  gender = c("men"))
+
+print(new_data)
+
+# Provide hypothetical values for marital and gender
+new_data$marital <- factor("Single", levels = levels(trainset$marital))
+new_data$gender <- factor("Men", levels = levels(trainset$gender))
+
+#convert relevant columns to factors if they are categorical in the original data
+new_data$age <- factor (new_data$age, levels = levels (trainset$age))
+new_data$gender <- factor (new_data$gender,levels = levels(trainset$gender))
+new_data$marital <- factor (new_data$marital,levels = levels(trainset$marital))
+new_data$exercise <- factor (new_data$exercise, levels = levels(trainset$exercise))
+
+#make predictions using the trained random forest model
+predicted_values <- predict(model1, new_data)
+
+#print or use the predicted values as needed
+print(predicted_values)
+
+
+# Train a decision tree model
+tree_model <- rpart(breakfast ~ ., data = Cerealdata_2024, method = "class")
+
+# Plot the decision tree
+rpart.plot(tree_model)
+
+
+
