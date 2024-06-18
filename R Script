@@ -1,0 +1,255 @@
+#For attaching the  officestore  data file to R 
+attach(Office_Store)
+mean(`Cycle time`)
+median(`Cycle time`)
+mode(`Cycle time`)
+skewness(`Cycle time`)
+
+#Explore the relationship between discounts and profit by correlation, scatter plot, line of best fit 
+#and coefficient of determination. 
+# Analyze the mean and dispersion of shipping cost by market using a box plot. 
+# Evaluate total sales and profit by Sub-category using bar charts or dot plot graphic
+
+
+#scatter plot of  Sales and profit
+plot(Sales,Profit,
+     main="Scatter Plot of  Sales and Profit",
+     xlab="Sales",
+     ylab="Profit",
+     col="red")
+
+
+#correlation of sales and profit 
+result <-cor(Sales,Profit)
+cat("Correlation between Sales and profit :",result, "\n") 
+
+
+#
+
+#Line of best fit of sales and profit lm_model <- 
+lm(Office_Store$Profit ~ Office_Store$Sales) 
+abline(lm_model, col = "black", lwd = 2) 
+
+
+# Coefficient of determination (R-squared)
+r_squared <- summary(lm_model)$r.squared
+cat("Coefficient of determination (R-squared)=",r_squared, "\n")
+
+#coefficient of sales and profit r_squared 
+text(15000,-3000, paste("R-squared= ", round(r_squared , 2)), col = "black")
+text(15000, -4000, paste("Correlation=", round(result, 2)), col = "black")
+
+
+# To Calculate correlation between discounts and profit
+result <-cor(Discount,Profit)
+cat("Correlation between discount and profit :",result, "\n")
+
+
+#scatter plot of  discount and profit
+plot(Discount,Profit,
+     main="Scatter Plot of  Discount and Profit",
+     xlab="Discount",
+     ylab="Profit",
+     col="red")
+
+
+
+# Line of best fit
+model <- lm(Profit ~ Discount, data =Office_Store)
+abline(model, col = "black", lw=2)
+
+
+
+# Coefficient of determination (R-squared)
+r_squared <- summary(model)$r.squared
+cat("Coefficient of determination (R-squared)=",r_squared, "\n")
+
+
+# Add  correlation and R-squared value to the plot
+
+
+text(0.2,-3000, paste("R-squared= ", round(r_squared , 2)), col = "black")
+text(0.2, -4000, paste("Correlation=", round(result, 2)), col = "black")
+
+
+
+# comparing the dispersion of shipping cost by market 
+ggplot(Office_Store,aes(x=Market,y=`Shipping Cost`))+
+  geom_boxplot(fill="lightblue")+labs(title ="Dispersion of Shipping cost by Market",
+                                      x="Market",
+                                      y="Shipping Cost")
+
+
+
+
+
+
+#To read the .csv file
+df <- read.csv("Office Store.csv")
+
+#To  Determine the total shipping cost across each market
+result <- aggregate(cbind(`Shipping Cost`) ~Market, data = df, FUN = sum)
+
+# Print the result
+print(result)
+
+
+
+#To read the .csv file
+df <- read.csv("Office Store.csv")
+
+#To  Determine the mean shipping cost across each market
+result <- aggregate(cbind(`Shipping Cost`) ~Market, data = df, FUN = mean )
+
+# Print the result
+print(result)
+
+
+
+#To read the .csv file
+df <- read.csv("Office Store.csv")
+
+#To  Determine the median shipping cost across each market
+result <- aggregate(cbind(`Shipping Cost`) ~Market, data = df, FUN = median  )
+
+# Print the result
+print(result)
+
+#To read the .csv file
+df <- read.csv("Office Store.csv")
+
+#To  Determine the median shipping cost across each market
+result <- aggregate(cbind(`Shipping Cost`) ~Market, data = df, FUN =sd)
+
+# Print the result
+print(result)
+
+
+
+
+
+getwd()  # Check current working directory
+list.files()  # List files in the current working directory
+
+# Calculate total sales  for each sub-category
+total_sales <- aggregate(Sales ~ `Sub-Category`, Office_Store, sum)
+
+
+# Bar chart for profit by Sub-category
+ggplot(total_sales, aes(x = Sales, y = reorder(`Sub-Category`,Sales, FUN = function(x) sum(x)), fill = `Sub-Category`)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = paste0("$", scales::comma(Sales)), hjust =0), 
+            position = position_dodge(width = 0.5), size =3) +
+  labs(title = "Total Sales by Sub-category",
+       x = "Total Sales",
+       y= "Sub-category",
+       )
+
+
+ 
+#To read the .csv file
+df <- read.csv("Office Store.csv")
+#To  Determine the total sales, total profit  across each sub-category
+result <- aggregate(cbind(Sales,Profit) ~`Sub-Category`, data = df, FUN =sum)
+# Print the result
+print(result)
+
+
+
+
+
+# Calculate total profit for each sub-category
+total_profit <- aggregate(Profit ~ `Sub-Category`, Office_Store, sum)
+
+
+# Bar chart for profit by Sub-category
+ggplot(total_profit, aes(x = Profit, y = reorder(`Sub-Category`, -Profit, FUN = function(x) sum(x)), fill = `Sub-Category`)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = paste0("$", scales::comma(Profit)), hjust = -0.2), 
+            position = position_dodge(width = 0.5), size = 3) +
+  labs(title = "Profit by Sub-category",
+       x = "Total Profit",
+       y = "Sub-category") +
+  scale_x_continuous(labels = scales::comma)
+  
+
+# Analyze the relationship between order quantity and late deliveries 
+ggplot(Office_Store, aes(x = Quantity, y = reorder(`Delivery status`, Quantity, FUN = function(x) sum(x)), fill = `Delivery status`)) +
+  geom_bar(stat = "identity", fill = "lightgreen") +
+  geom_text(aes(label = scales::comma(Quantity), group = `Delivery status`), 
+            position = position_dodge(width = 0.5), size = 3, vjust = -0.5) +
+  labs(title = "Relationship between Order Quantity and Late Deliveries",
+       x = "Order Quantity",
+       y = "Late Deliveries")
+
+
+# Assuming you have a dataframe named 'Office_Store' with columns 'Quantity' and 'Delivery status'
+# Replace 'Office_Store' with the actual name of your dataframe and adjust column names accordingly.
+
+# Load the necessary library
+library(ggplot2)
+
+# Convert 'Delivery status' to a factor
+Office_Store$`Delivery status` <- as.factor(Office_Store$`Delivery status`)
+
+# Create a grouped bar plot with text labels for total count
+ggplot(Office_Store, aes(x = `Delivery status`, y = Quantity, fill = `Delivery status`)) +
+  geom_bar(stat = "identity", position = "dodge", fill = "lightgreen") +
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, position = position_dodge(width = 0.9)) +
+  labs(title = "Relationship between Order Quantity and Delivery Status",
+       x = "Delivery Status",
+       y = "Order Quantity")
+
+
+
+
+# Analyze the sales trend using a line chart
+
+
+ggplot(Office_Store, aes(x = `Order Date`, 
+                         y =Sales)) +
+  geom_line() +
+  labs(title = "Sales Trend Over Time", 
+       x = "order Date", y = "Sales") 
+
+
+
+
+# Assuming you have already loaded the necessary libraries like tidyverse and ggplot2
+library(tidyverse)
+
+sales_year <- Office_Store %>%
+  YEAR <-group_by(Year = format(`Order Date`, "%Y")) %>%
+  summarise(Sales3=sum(Sales))
+
+# Plot
+ggplot(sales_year, aes(x = Year, y = Sales3, group=1)) +
+  geom_line() +
+  labs(title = "  Total sales by year",
+       x = "year",
+       y = "Total Sales") 
+
+
+# Load the dplyr package
+library(dplyr)
+
+# Read the .csv file
+Office_Store <- read.csv("Office Store.csv")
+
+# Group by Year using dplyr
+sales_year <- Office_Store %>%
+  group_by(Year = format(`Order Date`, "%Y")) %>%
+  summarise(TotalSales = sum(Sales))
+
+# Print the result
+print(sales_year)
+
+
+
+
+
+
+
+
+
+
